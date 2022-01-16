@@ -46,7 +46,7 @@ const Input = styled.input.attrs({ required: true, maxLength: 10 })`
   background-color: tomato;
 `;
 
-function App() {
+function Styled() {
   return (
     // # Inline CSS: Easy but dirty code...
     // <div style={{ display: "flex" }}>
@@ -74,4 +74,4 @@ function App() {
   );
 }
 
-export default App;
+export default Styled;

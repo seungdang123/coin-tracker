@@ -1,10 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
+import Styled from "./Styled";
+import Animation from "./Animation";
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Animation />
   </React.StrictMode>,
   document.getElementById("root")
 );
