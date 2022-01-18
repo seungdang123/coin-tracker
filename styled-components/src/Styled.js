@@ -3,7 +3,12 @@ import styled from "styled-components";
 // # Styled-components: Useful way applying CSS
 // # Use "backtic" for setting CSS properties
 const Father = styled.div`
+  height: 100vh;
+  width: 100vw;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 `;
 
 // const BoxOne = styled.div`
@@ -26,7 +31,7 @@ const Box = styled.div`
   height: 100px;
 `;
 
-// # Extend components
+// # Extending components
 const Circle = styled(Box)`
   border-radius: 50%;
 `;
@@ -43,7 +48,8 @@ const Btn = styled.button`
 
 // # Reduce to write repeated attributes by "attrs"
 const Input = styled.input.attrs({ required: true, maxLength: 10 })`
-  background-color: tomato;
+  background-color: ${(props) => props.bgColor};
+  margin-bottom: 15px;
 `;
 
 function Styled() {
@@ -64,12 +70,18 @@ function Styled() {
       <Btn as="a" href="/">Log in</Btn> */}
 
       {/* These Inputs have required & maxLength attributes */}
-      <Input />
-      <Input />
-      <Input />
-      <Input />
-      <Input />
-      <Input />
+      <Input bgColor="red" />
+      <Input bgColor="orange" />
+      <Input bgColor="yellow" />
+      <Input bgColor="green" />
+      <Input bgColor="blue" />
+      <Input
+        as="div"
+        bgColor="purple"
+        style={{ color: "white", width: "80px", textAlign: "center" }}
+      >
+        as
+      </Input>
     </Father>
   );
 }

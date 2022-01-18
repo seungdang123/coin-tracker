@@ -3,6 +3,10 @@ import styled, { keyframes } from "styled-components";
 
 const Wrapper = styled.div`
   display: flex;
+  height: 100vh;
+  width: 100vw;
+  justify-content: center;
+  align-items: center;
 `;
 
 // # Animation
@@ -24,6 +28,31 @@ const rotaionAnimation = keyframes`
     }
 `;
 
+const colorText = keyframes`
+  from {
+    color: teal;
+  }
+  to {
+    color: tomato;
+  }
+`;
+
+const Emoji = styled.span`
+  transition: 1s;
+  font-size: 30px;
+`;
+
+const Text = styled.h3`
+  color: white;
+  transition: 1s;
+`;
+
+export const Btn = styled.button`
+  animation: ${colorText} 1s linear infinite;
+  font-size: 30px;
+  padding: 15px;
+`;
+
 const Box = styled.div`
   display: flex;
   justify-content: center;
@@ -33,18 +62,37 @@ const Box = styled.div`
   animation: ${rotaionAnimation} 30s linear infinite;
   cursor: pointer;
 
+  &:hover {
+    ${Emoji} {
+      display: block;
+    }
+    ${Text} {
+      display: block;
+    }
+  }
+
   // # Select elements outside of styled-components
   // # Targeting "span" which is inside of "Box"
-  span {
-    font-size: 30px;
 
-    // # Pseudo Selector : Setting hover by using "&"
+  /* span {
+    // # States Selector : Setting hover by using "&"
     // # &:hover is same span:hover
     &:hover {
-      font-size: 40px;
+      font-size: 98px;
     }
-    &:active {
-      opacity: 0;
+  } */
+
+  // Pseudo selector: Select another styled-components in side of styled-components.
+  // Targeting by using Pseudo Selector
+  ${Emoji} {
+    &:hover {
+      font-size: 98px;
+    }
+  }
+
+  ${Text} {
+    &:hover {
+      color: purple;
     }
   }
 `;
@@ -53,8 +101,13 @@ function Animation() {
   return (
     <Wrapper>
       <Box>
-        <span>🍕</span>
+        {/* <span>🍕</span> */}
+
+        {/* Use Pseudo SElectors components */}
+        <Emoji>🍕</Emoji>
+        <Text>Pseudo</Text>
       </Box>
+      <Btn>Click</Btn>
     </Wrapper>
   );
 }
