@@ -1,0 +1,46 @@
+# RECAP TS CHAPTER..
+
+# Create H1 by using styled-component
+const H1 = styled.h1`
+    color: ${(props) => props.theme.textColor};
+`;
+
+# Set Dummpy function's type
+interface DummyProps {
+    text: string;
+
+    # Make a optional props
+    active?: boolean;
+}
+
+# active's default value is "false"
+function Dummy({ text, active = false}) {
+    return <H1>{text}</H1>
+}
+
+function App() {
+    return (
+        <Container>
+
+            # this acitve mean active={true} in TS
+            <Dummy active text="Hello!"/>
+        </Container>
+    )    
+}
+
+export default App;
+
+
+
+# React Event in TS
+
+# React.FormEvent is started from HTMLButtonElement
+const onClick = (event:React.FormEvent<HTMLButtonElement>) => {
+    // code....
+}
+
+# Typescript declaration
+
+패키지 설치 후 Typescript 선언과 관련된 에러가 발생할 경우 npm -i --save-dev @types/패키지이름
+을 설치한다.
+
