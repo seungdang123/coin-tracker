@@ -12,7 +12,16 @@
     => React router dom, react-query 설치
 
 - routes 폴더 생성 및 Coin, Coins 파일 생성
-    => for Nested route
+    => for Nested route 
+
+
+
+# 2Day (1/26, Wed)
+
+- CSS 적용
+    => Reset css (GlobalStyle - styled-components 사용)
+    => Google fonts & Flat UI 이용
+
 
 
 
