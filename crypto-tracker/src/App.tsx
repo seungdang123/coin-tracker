@@ -1,5 +1,9 @@
 import { createGlobalStyle } from "styled-components";
 import Router from "./Router";
+import { ThemeProvider } from "styled-components";
+import { darkTheme, lightTheme } from "./theme";
+import { useState } from "react";
+import Switch from "./Switch";
 
 const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
@@ -54,11 +58,10 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
   }
   body {
+    font-family: "Source Sans Pro", sans-serif;
     font-weight: 300;
-    font-family: 'Source Sans Pro', sans-serif;
-    background-color:${(props) => props.theme.bgColor};
-    color:${(props) => props.theme.textColor};
-    line-height: 1.2;
+    background-color: ${(props) => props.theme.bgColor};
+    color: ${(props) => props.theme.textColor}
   }
   a {
     text-decoration: none;
@@ -67,11 +70,19 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 function App() {
+  const [isDark, setIsDark] = useState(true);
+
+  function changeTheme() {
+    setIsDark(!isDark);
+  }
   return (
     //Fragment: Ghost Component
     <>
-      <GlobalStyle />
-      <Router />
+      <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
+        <GlobalStyle />
+        <Switch changeTheme={changeTheme} isDark={isDark} />
+        <Router />
+      </ThemeProvider>
     </>
   );
 }
