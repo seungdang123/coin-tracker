@@ -4,6 +4,8 @@ import { ThemeProvider } from "styled-components";
 import { darkTheme, lightTheme } from "./theme";
 import { useState } from "react";
 import Switch from "./Switch";
+import { useRecoilValue } from "recoil";
+import { isDarkAtom } from "./routes/atom";
 
 const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
@@ -70,18 +72,15 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 function App() {
-  const [isDark, setIsDark] = useState(true);
+  const isDark = useRecoilValue(isDarkAtom);
 
-  function changeTheme() {
-    setIsDark(!isDark);
-  }
   return (
     //Fragment: Ghost Component
     <>
       <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
         <GlobalStyle />
-        <Switch changeTheme={changeTheme} isDark={isDark} />
         <Router />
+        <Switch />
       </ThemeProvider>
     </>
   );

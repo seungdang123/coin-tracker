@@ -2,6 +2,8 @@ import { useParams, useOutletContext } from "react-router-dom";
 import { fetchCoinHistory } from "./api";
 import { useQuery } from "react-query";
 import ApexChart from "react-apexcharts";
+import { useRecoilValue } from "recoil";
+import { isDarkAtom } from "./atom";
 
 interface ChartProps {
   coinId: string;
@@ -19,6 +21,7 @@ interface IHistorical {
 }
 
 function Chart() {
+  const isDark = useRecoilValue(isDarkAtom);
   const { coinId } = useOutletContext<ChartProps>();
   const { isLoading, data } = useQuery<IHistorical[]>(
     ["ohlcv", coinId],
@@ -34,16 +37,25 @@ function Chart() {
         "Loading charts..."
       ) : (
         <ApexChart
-          type="line"
+          type="candlestick"
           series={[
             {
-              name: "Price",
-              data: data?.map((price) => price.close),
+              data: data?.map((price) => {
+                return {
+                  x: price.time_close,
+                  y: [
+                    price.open.toFixed(2),
+                    price.high.toFixed(2),
+                    price.low.toFixed(2),
+                    price.close.toFixed(2),
+                  ],
+                };
+              }),
             },
           ]}
           options={{
             theme: {
-              mode: "dark",
+              mode: isDark ? "dark" : "light",
             },
             chart: {
               toolbar: {
@@ -75,11 +87,15 @@ function Chart() {
                 show: false,
               },
             },
-            fill: {
-              type: "gradient",
-              gradient: { gradientToColors: ["purple"], stops: [0, 100] },
+
+            plotOptions: {
+              candlestick: {
+                colors: {
+                  upward: "#D25044",
+                  downward: "#1261C4",
+                },
+              },
             },
-            colors: ["orange"],
             tooltip: {
               y: {
                 formatter: (value) => `$ ${value.toFixed(2)}`,

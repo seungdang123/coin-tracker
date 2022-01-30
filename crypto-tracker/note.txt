@@ -1,0 +1,11 @@
+# npx create-react-app --template typescript
+=> 타입스크립트 템플릿으로 리액트 앱 생성
+
+# npm install styled-components
+=> 추가적으로 npm install --save-dev @types/styled-components를 통해 타입 선언
+
+# npm install react-router-dom, react-query
+
+# npm install react-apexcharts
+
+# npm install recoil

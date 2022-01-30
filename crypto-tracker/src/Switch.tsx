@@ -1,13 +1,13 @@
 import styled from "styled-components";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { isDarkAtom } from "./routes/atom";
 
-interface ISwitch {
-  changeTheme: (event: React.MouseEvent) => void;
-  isDark: Boolean;
-}
-
-function Switch({ changeTheme, isDark }: ISwitch) {
+function Switch() {
+  const setDarkAtom = useSetRecoilState(isDarkAtom);
+  const toggleDarkAtom = () => setDarkAtom((prev) => !prev);
+  const isDark = useRecoilValue(isDarkAtom);
   return (
-    <SwitchWrapper onClick={changeTheme}>{isDark ? "☼" : "☽"}</SwitchWrapper>
+    <SwitchWrapper onClick={toggleDarkAtom}>{isDark ? "☼" : "☽"}</SwitchWrapper>
   );
 }
 
