@@ -7,7 +7,7 @@ function Router() {
     <BrowserRouter>
       <Routes>
         <Route path="/:coinId/*" element={<Coin />} />
-        <Route path="/" element={<Coins />} />
+        <Route path="/coin-tracker" element={<Coins />} />
       </Routes>
     </BrowserRouter>
   );

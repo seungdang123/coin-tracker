@@ -192,7 +192,7 @@ function Coin() {
         <Title>
           {state?.name ? state.name : loading ? "Loading..." : info?.name}
         </Title>
-        <Link to={`/`}>
+        <Link to={`/coin-tracker`}>
           <BackBtn> ← Back</BackBtn>
         </Link>
       </Header>
