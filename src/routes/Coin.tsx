@@ -1,128 +1,98 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "react-query";
-import {
-  Routes,
-  useLocation,
-  useParams,
-  Route,
-  Outlet,
-  Link,
-  useMatch,
-} from "react-router-dom";
+import { Link, Routes, Route, useLocation, useParams } from "react-router-dom";
 import styled from "styled-components";
-import { fetchCoinInfo, fetchCoinTickers } from "./api";
+import Price from "./Price";
+import Chart from "./Chart";
 import { Helmet } from "react-helmet";
-
-interface RouteParams {
-  // Don't need to typing to string on react-router-dom v6
-  // Type to string | undefined automatically on v6
-  // coinId: string;
-}
-
-const Btn = styled.button`
-  border: none;
-  margin-top: 10px;
-  width: 60px;
-  height: 30px;
-  border-radius: 10px;
-  background-color: ${(props) => props.theme.boxColor};
-  text-align: center;
-  text-transform: uppercase;
-  box-shadow: none;
-  a {
-    letter-spacing: 1px;
-    padding: 8px;
-    font-family: "Source Sans Pro", sans-serif;
-    color: ${(props) => props.theme.textColor};
-    font-weight: 400;
-    font-size: 8px;
-  }
-`;
-
-const Tabs = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  margin: 25px 0px;
-  gap: 10px;
-`;
-
-const Tab = styled.span<{ isActive?: boolean }>`
-  text-align: center;
-  text-transform: uppercase;
-  font-size: 12px;
-  font-weight: 400;
-  background-color: ${(props) => props.theme.boxColor};
-  padding: 7px 0px;
-  border-radius: 10px;
-  color: ${(props) =>
-    props.isActive ? props.theme.accentColor : props.theme.textColor};
-  a {
-    display: block;
-  }
-`;
+import { useMatch } from "react-router-dom";
 
 const Container = styled.div`
-  padding: 0px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0 20px;
   max-width: 480px;
   margin: 0 auto;
 `;
-
 const Header = styled.header`
   height: 10vh;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 `;
 
 const Title = styled.h1`
-  font-size: 48px;
+  font-size: 50px;
   color: ${(props) => props.theme.accentColor};
 `;
 
-const Loader = styled.span`
+const Loader = styled.div`
   text-align: center;
-  display: block;
 `;
 
-export const Overview = styled.div`
-  display: flex;
-  justify-content: space-between;
-  background-color: ${(props) => props.theme.boxColor};
-  padding: 10px 20px;
-  border-radius: 10px;
-`;
-export const OverviewItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  span:first-child {
-    font-size: 10px;
-    font-weight: 400;
-    text-transform: uppercase;
-    margin-bottom: 5px;
+const BackBtn = styled.div`
+  position: fixed;
+  font-size: 23px;
+  left: 20px;
+  color: #616977;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+  &:hover {
+    color: ${(props) => props.theme.accentColor};
   }
 `;
-const Description = styled.p`
-  margin: 20px 0px;
+
+const Card = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 70px;
+  border: 1px solid ${(props) => props.theme.borderColor};
+  border-radius: 15px;
+  font-size: 17px;
+  color: ${(props) => props.theme.accentColor};
+  margin: 20px 0;
 `;
 
-interface RouteState {
-  state: {
-    name: string;
-  };
+const TapContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  margin-bottom: 20px;
+`;
+
+const Tap = styled.div<{ isActive: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40%;
+  border: 1px solid
+    ${(props) =>
+      props.isActive ? props.theme.accentColor : props.theme.tapColor};
+  color: ${(props) =>
+    props.isActive ? props.theme.accentColor : props.theme.tapColor};
+  padding: 15px;
+  border-radius: 15px;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    border-color: ${(props) => props.theme.accentColor};
+    color: ${(props) => props.theme.accentColor};
+  }
+`;
+
+const DateSpan = styled.span`
+  color: ${(props) => props.theme.textColor};
+  margin-left: 10px;
+`;
+
+interface RouterState {
+  name: string;
 }
 
-// Just Studied how to interfacing array
-// interface ITag {
-//   coin_counter: number;
-//   ico_counter: number;
-//   id: string;
-//   name: string;
-// }
-
-// Use Object.keys(temp1).join & Object.values(temp1).map(v => typeof v).join
-// Shortcut: Option + shift + i
-interface InfoData {
+interface InfoDate {
   id: string;
   name: string;
   symbol: string;
@@ -130,9 +100,6 @@ interface InfoData {
   is_new: boolean;
   is_active: boolean;
   type: string;
-  // Don't need these element...
-  // tags: ITag[];
-  // team: object;
   description: string;
   message: string;
   open_source: boolean;
@@ -146,7 +113,7 @@ interface InfoData {
   last_data_at: string;
 }
 
-interface PriceData {
+interface PriceDate {
   id: string;
   name: string;
   symbol: string;
@@ -180,101 +147,101 @@ interface PriceData {
   };
 }
 
-// Not request from APIbring dataes from browser
-// Don`t need to wait requesting data from API
-// State is made when we click coin's button
 function Coin() {
+  const [loading, setLoading] = useState(true);
   const { coinId } = useParams();
-  const { state } = useLocation() as RouteState;
+  const location = useLocation();
+  const state = location.state as RouterState;
+
+  const [info, setInfo] = useState<InfoDate>();
+  const [priceinfo, setPriceInfo] = useState<PriceDate>();
+
   const priceMatch = useMatch("/:coinId/price");
   const chartMatch = useMatch("/:coinId/chart");
-  const { isLoading: infoLoading, data: infoData } = useQuery<InfoData>(
-    ["infos", coinId!],
-    () => fetchCoinInfo(coinId!)
-  );
-  const { isLoading: tickersLoading, data: tickersData } = useQuery<PriceData>(
-    ["tickers", coinId!],
-    () => fetchCoinTickers(coinId!),
-    {
-      refetchInterval: 5000,
-    }
-  );
-  // const [loading, setLoading] = useState(true);
-  // const [info, setInfo] = useState<InfoData>();
-  // const [priceInfo, setPriceInfo] = useState<PriceData>();
-  // useEffect(() => {
-  //   (async () => {
-  //     const infoData = await (
-  //       await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
-  //     ).json();
 
-  //     const priceData = await (
-  //       await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)
-  //     ).json();
-  //     setInfo(infoData);
-  //     setPriceInfo(priceData);
-  //     setLoading(false);
-  //   })();
-  // }, [coinId]);
-  const loading = infoLoading || tickersLoading;
+  const [time, setTime] = useState(new Date().toLocaleDateString());
+
+  useEffect(() => {
+    (async () => {
+      const infoData = await fetch(
+        `https://api.coinpaprika.com/v1/coins/${coinId}`
+      );
+      const infoJson = await infoData.json();
+      setInfo(infoJson);
+    })();
+
+    (async () => {
+      const priceData = await fetch(
+        `https://api.coinpaprika.com/v1/tickers/${coinId}`
+      );
+      const priceJson = await priceData.json();
+      setPriceInfo(priceJson);
+    })();
+
+    setLoading(false);
+  }, [coinId]);
 
   return (
     <Container>
       <Helmet>
         <title>
-          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+          {state?.name ? `${state.name}` : loading ? "Loading..." : info?.name}
         </title>
       </Helmet>
-      <Btn>
-        <Link to={"/"}>Back</Link>
-      </Btn>
       <Header>
-        {/* If there's state, show you state.name unless "Loading..." */}
         <Title>
-          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+          {state?.name ? state.name : loading ? "Loading..." : info?.name}
         </Title>
+        <Link to={`/`}>
+          <BackBtn> ← Back</BackBtn>
+        </Link>
       </Header>
       {loading ? (
         <Loader>Loading...</Loader>
       ) : (
-        <>
-          <Overview>
-            <OverviewItem>
-              <span>Rank:</span>
-              <span>{infoData?.rank}</span>
-            </OverviewItem>
-            <OverviewItem>
-              <span>Symbol:</span>
-              <span>${infoData?.symbol}</span>
-            </OverviewItem>
-            <OverviewItem>
-              <span>Price:</span>
-              <span>$ {tickersData?.quotes.USD.price.toFixed(2)}</span>
-            </OverviewItem>
-          </Overview>
-          <Description>{infoData?.description}</Description>
-          <Overview>
-            <OverviewItem>
-              <span>Total Suply:</span>
-              <span>{tickersData?.total_supply}</span>
-            </OverviewItem>
-            <OverviewItem>
-              <span>Max Supply:</span>
-              <span>{tickersData?.max_supply}</span>
-            </OverviewItem>
-          </Overview>
+        <div>
+          <Card>
+            <h2>
+              Symbol : {info?.symbol} | Rank : {info?.rank}
+            </h2>
+          </Card>
+          <span>{info?.description}</span>
+          <Card>
+            <h1>${priceinfo?.quotes.USD.price.toFixed(2)}</h1>
+            <DateSpan>({time})</DateSpan>
+          </Card>
 
-          <Tabs>
-            <Tab isActive={chartMatch !== null}>
-              <Link to={`/${coinId}/chart`}>Chart</Link>
-            </Tab>
-            <Tab isActive={priceMatch !== null}>
-              <Link to={`/${coinId}/price`}>Price</Link>
-            </Tab>
-          </Tabs>
+          <TapContainer>
+            <Tap isActive={chartMatch != null}>
+              <Link to={`chart`}>
+                <span style={{ padding: "10px 60px" }}>Chart</span>
+              </Link>
+            </Tap>
+            <Tap isActive={priceMatch != null}>
+              <Link to={`price`} state={priceinfo}>
+                <span style={{ padding: "10px 60px" }}>Price</span>
+              </Link>
+            </Tap>
+          </TapContainer>
 
-          <Outlet context={{ coinId, tickersData }} />
-        </>
+          <Routes>
+            <Route
+              path="/chart"
+              element={
+                <Chart
+                  coinId={coinId ? coinId : "Error"}
+                  name={info ? info.name : "Error"}
+                />
+              }
+            />
+            <Route
+              path="/price"
+              element={
+                <Price price={priceinfo} name={info ? info.name : "Error"} />
+              }
+            />
+          </Routes>
+        </div>
       )}
     </Container>
   );

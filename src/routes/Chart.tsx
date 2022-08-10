@@ -1,108 +1,96 @@
-import { useParams, useOutletContext } from "react-router-dom";
-import { fetchCoinHistory } from "./api";
-import { useQuery } from "react-query";
 import ApexChart from "react-apexcharts";
+import { Helmet } from "react-helmet";
+import { useQuery } from "react-query";
+import { fetchCoinHistory } from "../api";
+import { isDarkAtom } from "../atom";
 import { useRecoilValue } from "recoil";
-import { isDarkAtom } from "./atom";
 
-interface ChartProps {
+interface IChart {
   coinId: string;
+  name: string;
 }
 
-interface IHistorical {
-  close: number;
-  high: number;
-  low: number;
-  market_cap: number;
-  open: number;
-  time_close: string;
-  time_open: string;
-  volume: number;
+interface IDataFlow {
+  close?: string;
+  high?: string;
+  low?: string;
+  market_cap?: number;
+  open?: string;
+  time_close?: number;
+  time_open?: number;
+  volume?: string;
+  error?: string;
 }
 
-function Chart() {
-  const isDark = useRecoilValue(isDarkAtom);
-  const { coinId } = useOutletContext<ChartProps>();
-  const { isLoading, data } = useQuery<IHistorical[]>(
-    ["ohlcv", coinId],
-    () => fetchCoinHistory(coinId),
-    {
-      refetchInterval: 10000,
-    }
+async function getStatue(coinId: IChart) {
+  await fetch(
+    `https://ohlcv-api.nomadcoders.workers.dev?coinId=${coinId}`
+  ).then((response) => response.status);
+}
+
+function Chart({ coinId, name }: IChart) {
+  const { isLoading, data } = useQuery<IDataFlow[]>(["ohlcv", coinId], () =>
+    fetchCoinHistory(coinId)
   );
+
+  const isDark = useRecoilValue(isDarkAtom);
+  console.log(data?.length);
 
   return (
     <div>
+      <Helmet>
+        <title>{`${name} | Chart`} </title>
+      </Helmet>
       {isLoading ? (
-        "Loading charts..."
+        "Loading chart..."
+      ) : data?.length == undefined ? (
+        <h1 style={{ fontSize: "17px", color: "crimson", marginTop: "30px" }}>
+          Error !! Can't show chart :: Price data not found
+        </h1>
       ) : (
         <ApexChart
           type="candlestick"
           series={[
             {
-              data: data?.map((price) => {
-                return {
-                  x: price.time_close,
-                  y: [
-                    price.open.toFixed(2),
-                    price.high.toFixed(2),
-                    price.low.toFixed(2),
-                    price.close.toFixed(2),
-                  ],
-                };
-              }),
+              name: "price",
+              data: data?.map((data) => {
+                return [
+                  data.time_close,
+                  data.open,
+                  data.high,
+                  data.low,
+                  data.close,
+                ];
+              }) as any,
             },
           ]}
           options={{
             theme: {
-              mode: isDark ? "dark" : "light",
+              mode: isDark ? "light" : "dark",
             },
             chart: {
+              height: 600,
+              width: 750,
               toolbar: {
                 show: false,
               },
-              height: 300,
-              width: 500,
               background: "transparent",
             },
             grid: { show: false },
             stroke: {
-              curve: "straight",
-              width: 4,
+              curve: "smooth",
+              width: 3,
             },
             yaxis: {
               show: false,
             },
             xaxis: {
-              type: "datetime",
-              categories: data?.map((price) => price.time_close),
-
-              labels: {
-                show: false,
-              },
-              axisTicks: {
-                show: false,
-              },
-              axisBorder: {
-                show: false,
-              },
-            },
-
-            plotOptions: {
-              candlestick: {
-                colors: {
-                  upward: "#D25044",
-                  downward: "#1261C4",
-                },
-              },
-            },
-            tooltip: {
-              y: {
-                formatter: (value) => `$ ${value.toFixed(2)}`,
-              },
+              axisBorder: { show: false },
+              axisTicks: { show: false },
+              labels: { show: false },
             },
           }}
-        ></ApexChart>
+        />
       )}
     </div>
   );
